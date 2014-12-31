@@ -78,7 +78,7 @@ class Application(tornado.web.Application):
             (img_url, tornado.web.StaticFileHandler, {"path": "./img"}),
             (r"/register", RegisterHandler),
             (r"/login", LoginHandler),
-            (r"/recommend/([0-9]+)", RecommendHandler)
+            (r"/recommend", RecommendHandler)
         ]
         tornado.web.Application.__init__(self, handlers, **settings) # use it when development
         # tornado.web.Application.__init__(self, handlers) # use it when production
@@ -142,15 +142,17 @@ class LoginHandler(tornado.web.RequestHandler):
             print "fail"
             self.write('Fail 请重新输入')
 
-        
 
 # 请求推荐卡片
 class RecommendHandler(tornado.web.RequestHandler):
-    def get(self, number):
+    def post(self):
+        number = self.get_argument('number')
         conn = MySQLdb.connect("localhost", "root", "Fl2014", charset="utf8")
         conn.select_db("cardbox_alpha")
         cur = conn.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-        cur.execute("SELECT * FROM cardboxers LIMIT " + str(number))
+        if number is int:
+            number = str(number)
+        cur.execute("SELECT * FROM cardboxers LIMIT " + number)
         result = cur.fetchall()
         count = 1
         response = {}
